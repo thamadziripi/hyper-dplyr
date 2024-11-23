@@ -4,7 +4,27 @@
 \alias{MutateDataFrame}
 \title{Mutate Data Frame R6 Class implementation}
 \description{
+Mutate Data Frame R6 Class implementation
+
+Mutate Data Frame R6 Class implementation
+}
+\details{
 R6 class for modifying/mutating data frames
+}
+\examples{
+
+## ------------------------------------------------
+## Method `MutateDataFrame$mutate_class`
+## ------------------------------------------------
+
+\dontrun{data_obj$mutate_class(x = (a + b) * 2)}
+}
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{data_}}{data.frame to be modified}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -18,17 +38,45 @@ R6 class for modifying/mutating data frames
 \if{html}{\out{<a id="method-MutateDataFrame-new"></a>}}
 \if{latex}{\out{\hypertarget{method-MutateDataFrame-new}{}}}
 \subsection{Method \code{new()}}{
+Creates a new data.frame object
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MutateDataFrame$new(data_)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data_}}{data.frame}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MutateDataFrame-mutate_class"></a>}}
 \if{latex}{\out{\hypertarget{method-MutateDataFrame-mutate_class}{}}}
 \subsection{Method \code{mutate_class()}}{
+Modifies data_ by either changing an existing column or
+adding a new column. Modifications are determined by (...), which
+should represent a named expression to be evaluated. `mutate_class`
+interfaces the same way as `dplyr::mutate`.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MutateDataFrame$mutate_class(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{name-value pairs where the name is the column to be modified
+or added. Value is the expression to be evaluated.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{data_obj$mutate_class(x = (a + b) * 2)}
+}
+\if{html}{\out{</div>}}
+
 }
 
 }

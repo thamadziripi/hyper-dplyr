@@ -48,10 +48,8 @@ data.frame
 }
 
 \examples{
+
 df <- data.frame(a = sample(1:100, 100), b = sample(1000:2000, 100))
 new_df <- hyper_mutate(df, c = a*b, d = c+a)
-
-# Show results
-tibble::tibble(new_df)
 
 }

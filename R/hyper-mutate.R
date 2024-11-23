@@ -34,22 +34,9 @@
 #'   The name gives the name of the column in the output.
 #'
 #' @examples
+#'
 #' df <- data.frame(a = sample(1:100, 100), b = sample(1000:2000, 100))
 #' new_df <- hyper_mutate(df, c = a*b, d = c+a)
-#'
-#' # Show results
-#' tibble::tibble(new_df)
-#'
-#' \dontrun{
-#'
-#' # benchmarking example:
-#' df <- data.frame(a = sample(1:1e7, 1e7), b = sample(1:1e7, 1e7), c = sample(1:1e7, 1e7), d = sample(1:1e7, 1e7))
-#'
-#' microbenchmark::microbenchmark(
-#'   hyperdplyr = hyper_mutate(df, e = a*b, f = c+a, g=exp(f)),
-#'   dplyr = dplyr::mutate(df, e = a*b, f = c+a, g=exp(f))
-#'   )
-#' }
 #'
 #' @return data.frame
 #' @export
@@ -59,24 +46,23 @@ hyper_mutate <- function(.data, ...) {
 
 #' Hyper Mutate implementation for Data Frames
 #'
-#' Preferred over tibbles as tibble transformations can be slower than
-#' data.frame. Can be compared using:
+#' Hyper-mutate relies on a R6 wrapper which imitates the primary behavior of
+#' `dplyr::mutate`. It's very light weight by design and prioritizes
+#' performance by reducing R's copy-on-modify behavior. R6 classes by nature
+#' allow for in-place modifications, reducing the overhead of having to
+#' frequently copy objects to memory.
 #'
-#' @param .data
-#' @param ...
-#'
+#' @inheritParams hyper_mutate
 #' @export
 hyper_mutate.data.frame <- function(.data, ...) {
-  return(mutate_class_wrapper(df, c = a*b, d = c+a))
+  mutate_class_wrapper(.data, ...)
 }
 
 #' Mutate Data Frame R6 Class wrapper
 #'
 #' Class wrapper for `MutateDataFrame` R6 class
 #'
-#' @param .data
-#' @param ...
-#'
+#' @inheritParams hyper_mutate
 #' @export
 mutate_class_wrapper <- function(.data, ...) {
   data_obj <- MutateDataFrame$new(.data)
@@ -89,21 +75,35 @@ mutate_class_wrapper <- function(.data, ...) {
 #'
 #' R6 class for modifying/mutating data frames
 #'
-#' @param .data
-#' @param ...
 #' @import rlang
 #' @import R6
 #' @export
 MutateDataFrame <- R6Class("MutateDataFrame",
    public = list(
+     #' @field data_ data.frame to be modified
      data_ = NULL,
+
+     #' @description Creates a new data.frame object
+     #'
+     #' @param data_ data.frame
      initialize = function(data_) {
        self$data_ <- data_
      },
+
+     #' @description Modifies data_ by either changing an existing column or
+     #' adding a new column. Modifications are determined by (...), which
+     #' should represent a named expression to be evaluated. `mutate_class`
+     #' interfaces the same way as `dplyr::mutate`.
+     #'
+     #' @param ... name-value pairs where the name is the column to be modified
+     #' or added. Value is the expression to be evaluated.
+     #'
+     #' @examples
+     #' \dontrun{data_obj$mutate_class(x = (a + b) * 2)}
      mutate_class = function(...) {
        dots <- enexprs(...)
 
-       # loops through names and evaluates lazy expressions
+       # loops through names and evaluates lazy dot expressions
        for (name in names(dots)) {
          self$data_[[name]] <- eval(
            dots[[name]],

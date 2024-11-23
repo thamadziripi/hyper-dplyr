@@ -7,7 +7,11 @@
 mutate_class_wrapper(.data, ...)
 }
 \arguments{
-\item{...}{}
+\item{.data}{A data frame, data frame extension (e.g. a tibble), or a
+lazy data frame (e.g. from dbplyr or dtplyr).}
+
+\item{...}{<[`data-masking`][rlang::args_data_masking]> Name-value pairs.
+The name gives the name of the column in the output.}
 }
 \description{
 Class wrapper for `MutateDataFrame` R6 class
