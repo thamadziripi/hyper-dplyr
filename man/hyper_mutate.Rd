@@ -2,21 +2,56 @@
 % Please edit documentation in R/hyper-mutate.R
 \name{hyper_mutate}
 \alias{hyper_mutate}
-\alias{hyper_mutate.data.frame}
-\alias{hyper_mutate.vector}
-\title{An efficient alternative to dplyr's mutate function}
+\title{An efficient alternative approach to `dplyr` mutate function}
 \usage{
 hyper_mutate(.data, ...)
-
-\method{hyper_mutate}{data.frame}(.data, ...)
-
-\method{hyper_mutate}{vector}(.data, ...)
 }
 \arguments{
-\item{...}{}
+\item{.data}{A data frame, data frame extension (e.g. a tibble), or a
+lazy data frame (e.g. from dbplyr or dtplyr).}
+
+\item{...}{<[`data-masking`][rlang::args_data_masking]> Name-value pairs.
+The name gives the name of the column in the output.}
+}
+\value{
+data.frame
 }
 \description{
-`hyper_mutate` similiar to `dplyr::mutate` is a lightweight and highly
-efficient data manipulation function,that addresses some of the performance
-limitations found in dplyr.
+`hyper_mutate`, similiar to `dplyr::mutate`, is a lightweight and highly
+  efficient data manipulation function, that addresses four main
+  limitations found in dplyr, namely data copying, evaluation context
+  overhead, type conversion and its reliance on tidyverse.
+}
+\section{`dplyr}{
+:mutate` performance limitations:
+
+[1] Data copying: `dplyr::mutate` creates a new data frame when
+  modifying or adding columns rather than modifying the data in place.
+  Instead, `hyper_mutate` prioritises performance by modifying the data in
+  place removing any memory overhead.
+
+[2] Evaluation context: `dplyr::mutate` uses non-standard evaluation to
+  evaluate transformations. For example, column names being used directly
+  without quotes requires parsing and environment specific evaluation.
+  Although it makes `dplyr::mutate` user friendly, its inherently slower
+  than direct evaluation.
+
+[3] Type conversion: When adding new columns, `dplyr::mutate` checks and
+  ensures type consistency across operations. This can slow down operations
+  involving multiple transformations, as every operation may require checks
+  and adjustments.
+
+[4] Tidyverse: `dplyr::mutate` is tightly integrated with a number of
+  `tidyverse` constructs. These abstractions can introduce overhead compared
+  to raw base R operations, especially for small, tight loops or highly
+  specific transformations.
+}
+
+\examples{
+df <- data.frame(a = sample(1:100, 100), b = sample(1000:2000, 100))
+new_df <- hyper_mutate(df, c = a*b, d = c+a)
+
+# Show results
+tibble::tibble(new_df)
+
 }

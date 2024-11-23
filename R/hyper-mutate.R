@@ -34,13 +34,30 @@
 #'   The name gives the name of the column in the output.
 #'
 #' @examples
-#' @return
+#' df <- data.frame(a = sample(1:100, 100), b = sample(1000:2000, 100))
+#' new_df <- hyper_mutate(df, c = a*b, d = c+a)
+#'
+#' # Show results
+#' tibble::tibble(new_df)
+#'
+#' \dontrun{
+#'
+#' # benchmarking example:
+#' df <- data.frame(a = sample(1:1e7, 1e7), b = sample(1:1e7, 1e7), c = sample(1:1e7, 1e7), d = sample(1:1e7, 1e7))
+#'
+#' microbenchmark::microbenchmark(
+#'   hyperdplyr = hyper_mutate(df, e = a*b, f = c+a, g=exp(f)),
+#'   dplyr = dplyr::mutate(df, e = a*b, f = c+a, g=exp(f))
+#'   )
+#' }
+#'
+#' @return data.frame
 #' @export
 hyper_mutate <- function(.data, ...) {
   UseMethod("hyper_mutate")
 }
 
-#' @rdname hyper_mutate
+#' Hyper Mutate implementation for Data Frames
 #'
 #' Preferred over tibbles as tibble transformations can be slower than
 #' data.frame. Can be compared using:
@@ -48,27 +65,52 @@ hyper_mutate <- function(.data, ...) {
 #' @param .data
 #' @param ...
 #'
-#' @examples
-#' @return
 #' @export
 hyper_mutate.data.frame <- function(.data, ...) {
-  cat("shape of data.frame: ", dim(.data))
-
-  dots <- list(...)
-
-  hyper_mutate_cols(data)
+  return(mutate_class_wrapper(df, c = a*b, d = c+a))
 }
 
-#' @rdname hyper_mutate
+#' Mutate Data Frame R6 Class wrapper
+#'
+#' Class wrapper for `MutateDataFrame` R6 class
 #'
 #' @param .data
 #' @param ...
 #'
-#' @examples
-#' @return
 #' @export
-hyper_mutate.vector <- function(.data, ...) {
-  cat("size of vector: ", length(.data))
+mutate_class_wrapper <- function(.data, ...) {
+  data_obj <- MutateDataFrame$new(.data)
+  data_obj$mutate_class(...)
 
+  return(data_obj$data_)
 }
 
+#' Mutate Data Frame R6 Class implementation
+#'
+#' R6 class for modifying/mutating data frames
+#'
+#' @param .data
+#' @param ...
+#' @import rlang
+#' @import R6
+#' @export
+MutateDataFrame <- R6Class("MutateDataFrame",
+   public = list(
+     data_ = NULL,
+     initialize = function(data_) {
+       self$data_ <- data_
+     },
+     mutate_class = function(...) {
+       dots <- enexprs(...)
+
+       # loops through names and evaluates lazy expressions
+       for (name in names(dots)) {
+         self$data_[[name]] <- eval(
+           dots[[name]],
+           envir = self$data_,
+           enclos = parent.frame()
+         )
+       }
+     }
+   )
+)
